@@ -1,4 +1,25 @@
-venv/ 
-__pycache__/ 
-.vscode/ 
+# 1. Model Weights and Checkpoints (CRITICAL)
 models/
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.onnx
+
+# 2. Virtual Environments & IDE
+venv/
+.venv/
+env/
+.vscode/
+.idea/
+
+# 3. Python Bytecode & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# 4. OS metadata & Temporary Files
+.DS_Store
+Thumbs.db
+*.log
