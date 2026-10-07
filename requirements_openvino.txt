@@ -1,0 +1,5 @@
+optimum-intel[openvino]
+transformers
+psutil
+fastapi
+uvicorn
