@@ -42,12 +42,18 @@ class CudaBackend(Backend):
                 )
 
             elif precision in cfg:
-                self.models[precision] = (
-                    AutoModelForCausalLM.from_pretrained(
-                        MODEL,
-                        quantization_config=cfg[precision],
-                        device_map="cuda",
-                    )
+                load_kwargs = {
+                    "quantization_config": cfg[precision],
+                    "device_map": "cuda",
+                }
+
+                # Use FP16 for non-quantized modules in the INT8 model.
+                if precision == "int8":
+                    load_kwargs["dtype"] = torch.float16
+
+                self.models[precision] = AutoModelForCausalLM.from_pretrained(
+                    MODEL,
+                    **load_kwargs,
                 )
 
             else:

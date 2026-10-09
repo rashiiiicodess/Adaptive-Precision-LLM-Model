@@ -17,18 +17,39 @@ from evaluate import score_output
 def run_benchmark(backend_name: str, mode: str, dataset_path: str = "data/eval.jsonl"):
     # 1. Initialize backend
     print(f"\n[*] Initializing backend: {backend_name} for mode: {mode}...")
-    if backend_name == "openvino":
+
+    if backend_name == "cuda":
+        from backends.backend_cuda import CudaBackend
+
+        backend = CudaBackend()
+
+        if mode == "static_int4":
+            backend.load(("int4",))
+        elif mode == "static_int8":
+            backend.load(("int8",))
+        elif mode == "adaptive":
+            backend.load(("int4", "int8"))
+        else:
+            raise ValueError(f"Unsupported mode for CUDA: {mode}")
+
+    elif backend_name == "openvino":
         from backends.backend_openvino import OpenVinoBackend
+
         backend = OpenVinoBackend()
         backend.load()
+
     elif backend_name == "dummy":
         from common.dummy_backend import DummyBackend
+
         backend = DummyBackend()
         backend.load()
+
     elif backend_name == "cpu":
         from backends.backend_llamacpp import LlamaCppBackend
+
         backend = LlamaCppBackend()
         backend.load()
+
     else:
         raise ValueError(f"Unknown backend: {backend_name}")
 
@@ -126,7 +147,7 @@ def run_benchmark(backend_name: str, mode: str, dataset_path: str = "data/eval.j
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Adaptive Precision LLM Benchmark")
-    parser.add_argument("--backend", default="openvino", choices=["openvino", "dummy", "cpu"])
+    parser.add_argument("--backend", default="openvino", choices=["openvino", "dummy", "cpu", "cuda"])
     parser.add_argument("--mode", required=True, choices=["static_int4", "static_int8", "adaptive"])
     parser.add_argument("--dataset", default="data/eval.jsonl")
     args = parser.parse_args()
