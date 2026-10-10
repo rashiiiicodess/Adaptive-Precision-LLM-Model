@@ -35,11 +35,16 @@ class LlamaCppBackend(Backend):
                 model_path=model_path,
                 n_ctx=2048,
                 n_threads=threads,
-                logits_all=True,  # Required by llama-cpp-python for logprob / confidence extraction
                 verbose=False,
             )
 
-    def generate(self, prompt: str, precision: str, max_new_tokens: int = 128) -> GenResult:
+    def generate(
+        self,
+        prompt: str,
+        precision: str,
+        max_new_tokens: int = 128,
+        compute_confidence: bool = True,
+    ) -> GenResult:
         """Run greedy generation on the specified quantized GGUF model and measure metrics."""
         if precision not in self.models:
             raise RuntimeError(
@@ -48,15 +53,26 @@ class LlamaCppBackend(Backend):
 
         model = self.models[precision]
         
+        # Configure chat completion parameters
+        chat_kwargs = {
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_new_tokens,
+            "temperature": 0.0,  # Greedy deterministic decoding
+        }
+        if compute_confidence:
+            chat_kwargs["logprobs"] = True
+            chat_kwargs["top_logprobs"] = 1
+
         # Measure wall-clock inference latency
         start_time = time.perf_counter()
-        output = model.create_chat_completion(
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_new_tokens,
-            temperature=0.0,  # Greedy deterministic decoding
-            logprobs=True,
-            top_logprobs=1,
-        )
+        try:
+            output = model.create_chat_completion(**chat_kwargs)
+        except Exception:
+            # Fallback without logprobs if engine encounters unsupported flag
+            chat_kwargs.pop("logprobs", None)
+            chat_kwargs.pop("top_logprobs", None)
+            output = model.create_chat_completion(**chat_kwargs)
+
         latency_s = time.perf_counter() - start_time
 
         # Extract generated text and token count

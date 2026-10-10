@@ -48,7 +48,14 @@ def run_benchmark(backend_name: str, mode: str, dataset_path: str = "data/eval.j
         from backends.backend_llamacpp import LlamaCppBackend
 
         backend = LlamaCppBackend()
-        backend.load()
+        if mode == "static_int4":
+            backend.load(("int4",))
+        elif mode == "static_int8":
+            backend.load(("int8",))
+        elif mode == "adaptive":
+            backend.load(("int4", "int8"))
+        else:
+            raise ValueError(f"Unsupported mode for CPU: {mode}")
 
     else:
         raise ValueError(f"Unknown backend: {backend_name}")

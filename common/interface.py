@@ -13,6 +13,7 @@ class GenResult:
 
 class Backend:
     name = "base"
+     
 
     def load(self, precisions=("int4", "int8")):
         """Load model weights for the specified precisions into memory."""

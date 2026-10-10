@@ -4,3 +4,5 @@ psutil>=5.9.0
 datasets>=2.14.0
 matplotlib>=3.7.0
 pandas>=2.0.0
+fastapi>=0.100.0
+uvicorn>=0.22.0

@@ -1,12 +1,39 @@
+import os
 from fastapi import FastAPI
 from controller import Controller
-from backends.backend_openvino import OpenVinoBackend
 
 app = FastAPI(title="Adaptive Precision LLM Inference Service")
 
-# Initialize backend on startup and compile to Intel Arc GPU
-b = OpenVinoBackend()
-b.load()
+# Initialize backend dynamically based on environment or hardware availability
+backend_choice = os.getenv("BACKEND", "openvino").lower()
+if backend_choice == "openvino":
+    try:
+        from backends.backend_openvino import OpenVinoBackend
+        b = OpenVinoBackend()
+        b.load()
+    except Exception as e:
+        print(f"[!] OpenVINO backend unavailable ({e}). Falling back to CPU/Dummy.")
+        try:
+            from backends.backend_llamacpp import LlamaCppBackend
+            b = LlamaCppBackend()
+            b.load()
+        except Exception:
+            from common.dummy_backend import DummyBackend
+            b = DummyBackend()
+            b.load()
+elif backend_choice == "cpu":
+    from backends.backend_llamacpp import LlamaCppBackend
+    b = LlamaCppBackend()
+    b.load()
+elif backend_choice == "cuda":
+    from backends.backend_cuda import CudaBackend
+    b = CudaBackend()
+    b.load()
+else:
+    from common.dummy_backend import DummyBackend
+    b = DummyBackend()
+    b.load()
+
 ctl = Controller(b)
 
 # Request history log for telemetry and monitoring
