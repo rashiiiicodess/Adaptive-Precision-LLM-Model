@@ -1,0 +1,3 @@
+model,dataset,precision,max_length,stride,input_tokens,scored_tokens,average_cross_entropy,perplexity,evaluation_seconds,peak_vram_mb,token_limit
+Qwen/Qwen2.5-1.5B-Instruct,wikitext-2-raw-v1-test,int4,512,256,299078,299077,2.3966970411694843,10.986827345603881,407.45455783799844,2057.79296875,full
+Qwen/Qwen2.5-1.5B-Instruct,wikitext-2-raw-v1-test,int8,512,256,299078,299077,2.3266201367774895,10.243262135276611,399.6307518190006,2602.22705078125,full
