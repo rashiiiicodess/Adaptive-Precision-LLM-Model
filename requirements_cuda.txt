@@ -3,3 +3,4 @@ numpy==2.5.3
 bitsandbytes==0.50.2
 transformers
 accelerate
+datasets
